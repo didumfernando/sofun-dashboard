@@ -6,8 +6,8 @@ import Database from 'better-sqlite3'
 import XLSX from 'xlsx'
 
 const app = express()
-const port = 3001
-const dataDir = join(process.cwd(), 'data')
+const port = Number(process.env.PORT ?? 3001)
+const dataDir = process.env.DATA_DIR ? process.env.DATA_DIR : join(process.cwd(), 'data')
 mkdirSync(dataDir, { recursive: true })
 
 const dbPath = join(dataDir, 'sofun.db')
@@ -449,6 +449,17 @@ app.get('/api/export/excel', (_req, res) => {
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   res.setHeader('Content-Disposition', 'attachment; filename=sofun-dashboard-export.xlsx')
   res.send(buffer)
+})
+
+const frontendPath = join(process.cwd(), 'dist')
+app.use(express.static(frontendPath))
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || req.path.startsWith('/api')) {
+    next()
+    return
+  }
+
+  res.sendFile(join(frontendPath, 'index.html'))
 })
 
 app.listen(port, () => {
