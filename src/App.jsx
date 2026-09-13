@@ -458,9 +458,9 @@ function App() {
     return (
       <div className="auth-page">
         <form className="auth-card" onSubmit={handleLogin}>
-          <p className="auth-kicker">SOFUN TRACKER</p>
+          <p className="auth-kicker">BRAVO SOFUN Tracker</p>
           <h1>Welcome back</h1>
-          <p className="auth-copy">Sign in to access the personnel dashboard.</p>
+          <p className="auth-copy">Sign in to access soldier fundamentals of bravo.</p>
 
           <label className="auth-field">
             <span>Email</span>
