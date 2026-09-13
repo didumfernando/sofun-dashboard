@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: sofun-dashboard
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DATA_DIR
+        value: /var/data
+      - key: LOGIN_EMAIL
+        sync: false
+      - key: LOGIN_PASSWORD
+        sync: false
+    disk:
+      name: sofun-data
+      mountPath: /var/data
+      sizeGB: 1
