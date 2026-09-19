@@ -102,7 +102,7 @@ const formConfigs = {
   result: {
     endpoint: '/api/results',
     title: 'Add Results',
-    button: 'Results',
+    button: 'Add Results',
     fields: ['type'],
   },
   conduct: {
@@ -269,18 +269,6 @@ function App() {
     }
   }
 
-  const summaryCards = useMemo(() => {
-    const completeCount = data.overview.filter((row) => [row.medical, row.ippt, row.voc, row.cs, row.atp].every((value) => value && value !== '-')).length
-    const medicalCount = data.medical.length
-
-    return [
-      { label: 'Total Personnel', value: data.personnel.length },
-      { label: 'Medical Records', value: medicalCount },
-      { label: 'Completed', value: completeCount },
-      { label: 'Overdue', value: Math.max(data.personnel.length - completeCount, 0) },
-    ]
-  }, [data])
-
   const medicalBreakdown = useMemo(() => ({
     fit: data.medical.filter((row) => String(row.medical_status ?? '').toLowerCase() === 'fit').length,
     temporary: data.medical.filter((row) => String(row.medical_status ?? '').toLowerCase().includes('temp')).length,
@@ -313,6 +301,19 @@ function App() {
 
     return rows.filter((row) => matchesSearch(row, searchTerm))
   }, [activePlatoon, data.overview, searchTerm])
+
+  const summaryCards = useMemo(() => {
+    const visiblePersonnel = filteredOverviewRows
+    const completeCount = visiblePersonnel.filter((row) => [row.medical, row.ippt, row.voc, row.cs, row.atp].every((value) => value && value !== '-')).length
+    const medicalCount = data.medical.length
+
+    return [
+      { label: 'Total Personnel', value: visiblePersonnel.length },
+      { label: 'Medical Records', value: medicalCount },
+      { label: 'Completed', value: completeCount },
+      { label: 'Overdue', value: Math.max(visiblePersonnel.length - completeCount, 0) },
+    ]
+  }, [data.medical.length, filteredOverviewRows])
 
   const filteredPersonnelRows = useMemo(() => data.personnel.filter((row) => matchesSearch(row, searchTerm)), [data.personnel, searchTerm])
   const filteredMedicalRows = useMemo(() => data.medical.filter((row) => matchesSearch(row, searchTerm)), [data.medical, searchTerm])
@@ -455,16 +456,16 @@ function App() {
   const activeFormFields = activeForm ? getFormFields(formMode, formValues) : []
 
   if (checkingSession) {
-    return <div className="auth-page"><div className="auth-card"><p className="auth-kicker">SOFUN TRACKER</p><h1>Checking access</h1></div></div>
+    return <div className="auth-page"><div className="auth-card"><p className="auth-kicker">BRAVO SOFUN TRACKER</p><h1>Checking access</h1></div></div>
   }
 
   if (!authenticated) {
     return (
       <div className="auth-page">
         <form className="auth-card" onSubmit={handleLogin}>
-          <p className="auth-kicker">SOFUN TRACKER</p>
+          <p className="auth-kicker">BRAVO SOFUN TRACKER</p>
           <h1>Welcome back</h1>
-          <p className="auth-copy">Sign in to access the personnel dashboard.</p>
+          <p className="auth-copy">Sign in to access 38 SCE BRAVO dashboard.</p>
 
           <label className="auth-field">
             <span>Email</span>
@@ -511,7 +512,7 @@ function App() {
           </button>
         ))}
 
-        <button className="sidebar-item new-entry" onClick={() => openForm('personnel')}>+ New Entry</button>
+        <button className="sidebar-item new-entry" onClick={() => openForm('personnel')}>Add Personnel</button>
         <button className="sidebar-item secondary" onClick={() => openForm('medical')}>Medical Record</button>
         <button className="sidebar-item secondary" onClick={() => openForm('result')}>Results</button>
         <button className="sidebar-item secondary" onClick={() => openForm('conduct')}>Conduct Date</button>

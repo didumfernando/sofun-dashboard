@@ -690,6 +690,7 @@ button {
 .modal-header h2 {
   margin: 0;
   font-size: 1.4rem;
+  color: var(--text);
 }
 
 .modal-close {
@@ -721,6 +722,7 @@ button {
   font: inherit;
   background: rgba(255, 255, 255, 0.95);
   color: var(--text);
+  -webkit-text-fill-color: var(--text);
   color-scheme: light;
 }
 

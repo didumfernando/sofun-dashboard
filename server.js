@@ -1,6 +1,6 @@
 import express from 'express'
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { gunzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
@@ -112,6 +112,29 @@ CREATE TABLE IF NOT EXISTS login (
 `
 
 db.exec(schema)
+
+function mergeSeedLogins() {
+  if (!existsSync(seedDatabasePath)) return
+
+  const temporarySeedPath = join(dataDir, '.seed-sofun.db')
+  const compressedSeed = Buffer.from(readFileSync(seedDatabasePath, 'utf8').trim(), 'base64')
+  writeFileSync(temporarySeedPath, gunzipSync(compressedSeed))
+
+  try {
+    const seedDatabase = new Database(temporarySeedPath, { readonly: true })
+    const seedLogins = seedDatabase.prepare('SELECT email, password FROM login').all()
+    const insertLogin = db.prepare('INSERT OR IGNORE INTO login (email, password) VALUES (?, ?)')
+    const merge = db.transaction(() => {
+      for (const login of seedLogins) insertLogin.run(login.email, login.password)
+    })
+    merge()
+    seedDatabase.close()
+  } finally {
+    unlinkSync(temporarySeedPath)
+  }
+}
+
+mergeSeedLogins()
 
 function hashPassword(password, salt = randomBytes(16).toString('hex')) {
   return `${salt}:${scryptSync(password, salt, 64).toString('hex')}`
