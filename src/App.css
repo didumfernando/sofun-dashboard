@@ -672,6 +672,7 @@ button {
   overflow: auto;
   border-radius: 22px;
   background: #fff;
+  color: var(--text);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
   padding: 20px;
 }
@@ -717,6 +718,13 @@ button {
   padding: 0 12px;
   font: inherit;
   background: rgba(255, 255, 255, 0.95);
+  color: var(--text);
+  color-scheme: light;
+}
+
+.form-field option {
+  color: var(--text);
+  background: #fff;
 }
 
 .form-actions {

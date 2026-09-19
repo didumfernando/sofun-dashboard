@@ -90,7 +90,7 @@ const formConfigs = {
   personnel: {
     endpoint: '/api/personnel',
     title: 'Add Personnel',
-    button: 'Add Personnel',
+    button: '+ New Entry',
     fields: ['NRIC', 'rank', 'name', 'platoon', 'DOE', 'ORD', 'turnY2'],
   },
   medical: {
@@ -269,6 +269,18 @@ function App() {
     }
   }
 
+  const summaryCards = useMemo(() => {
+    const completeCount = data.overview.filter((row) => [row.medical, row.ippt, row.voc, row.cs, row.atp].every((value) => value && value !== '-')).length
+    const medicalCount = data.medical.length
+
+    return [
+      { label: 'Total Personnel', value: data.personnel.length },
+      { label: 'Medical Records', value: medicalCount },
+      { label: 'Completed', value: completeCount },
+      { label: 'Overdue', value: Math.max(data.personnel.length - completeCount, 0) },
+    ]
+  }, [data])
+
   const medicalBreakdown = useMemo(() => ({
     fit: data.medical.filter((row) => String(row.medical_status ?? '').toLowerCase() === 'fit').length,
     temporary: data.medical.filter((row) => String(row.medical_status ?? '').toLowerCase().includes('temp')).length,
@@ -301,19 +313,6 @@ function App() {
     return rows.filter((row) => matchesSearch(row, searchTerm))
   }, [activePlatoon, data.overview, searchTerm])
 
-  const summaryCards = useMemo(() => {
-    const visiblePersonnel = filteredOverviewRows
-    const completeCount = visiblePersonnel.filter((row) => [row.medical, row.ippt, row.voc, row.cs, row.atp].every((value) => value && value !== '-')).length
-    const medicalCount = data.medical.length
-
-    return [
-      { label: 'Total Personnel', value: visiblePersonnel.length },
-      { label: 'Medical Records', value: medicalCount },
-      { label: 'Completed', value: completeCount },
-      { label: 'Overdue', value: Math.max(visiblePersonnel.length - completeCount, 0) },
-    ]
-  }, [data.medical.length, filteredOverviewRows])
-
   const filteredPersonnelRows = useMemo(() => data.personnel.filter((row) => matchesSearch(row, searchTerm)), [data.personnel, searchTerm])
   const filteredMedicalRows = useMemo(() => data.medical.filter((row) => matchesSearch(row, searchTerm)), [data.medical, searchTerm])
   const filteredIpptRows = useMemo(() => data.ippt.filter((row) => matchesSearch(row, searchTerm)), [data.ippt, searchTerm])
@@ -340,28 +339,28 @@ function App() {
       title: 'Medical Status',
       table: filteredMedicalRows,
       rawTable: data.medical,
-      columns: ['NRIC', 'Name', 'Medical Status', 'Start Date', 'End Date', 'IPPT', 'VOC', 'Trainfire', 'Remarks'],
+      columns: ['NRIC', 'Medical Status', 'Start Date', 'End Date', 'IPPT', 'VOC', 'Trainfire', 'Remarks'],
       emptyMessage: 'No medical records matched your search.',
     },
     IPPT: {
       title: 'IPPT Records',
       table: filteredIpptRows,
       rawTable: data.ippt,
-      columns: ['NRIC', 'Name', 'Date of Conduct', 'Pushup', 'Pushup Score', 'Situp', 'Situp Score', '2.4km', '2.4km Score', 'Overall', 'Grade'],
+      columns: ['NRIC', 'Date of Conduct', 'Pushup', 'Pushup Score', 'Situp', 'Situp Score', '2.4km', '2.4km Score', 'Overall', 'Grade'],
       emptyMessage: 'No IPPT records matched your search.',
     },
     VOC: {
       title: 'VOC Records',
       table: filteredVocRows,
       rawTable: data.voc,
-      columns: ['NRIC', 'Name', 'Type of VOC', 'Date of Conduct'],
+      columns: ['NRIC', 'Type of VOC', 'Date of Conduct'],
       emptyMessage: 'No VOC records matched your search.',
     },
     'ATP / CS': {
       title: 'ATP / CS Records',
       table: filteredAtpcsRows,
       rawTable: data.atpcs,
-      columns: ['NRIC', 'Name', 'Type', 'Date of Conduct', 'Score'],
+      columns: ['NRIC', 'Type', 'Date of Conduct', 'Score'],
       emptyMessage: 'No ATP / CS records matched your search.',
     },
     Conducts: {
@@ -458,9 +457,9 @@ function App() {
     return (
       <div className="auth-page">
         <form className="auth-card" onSubmit={handleLogin}>
-          <p className="auth-kicker">BRAVO SOFUN Tracker</p>
+          <p className="auth-kicker">SOFUN TRACKER</p>
           <h1>Welcome back</h1>
-          <p className="auth-copy">Sign in to access soldier fundamentals of bravo.</p>
+          <p className="auth-copy">Sign in to access the personnel dashboard.</p>
 
           <label className="auth-field">
             <span>Email</span>
@@ -507,7 +506,7 @@ function App() {
           </button>
         ))}
 
-        <button className="sidebar-item new-entry" onClick={() => openForm('personnel')}>Add Personnel</button>
+        <button className="sidebar-item new-entry" onClick={() => openForm('personnel')}>+ New Entry</button>
         <button className="sidebar-item secondary" onClick={() => openForm('medical')}>Medical Record</button>
         <button className="sidebar-item secondary" onClick={() => openForm('result')}>Results</button>
         <button className="sidebar-item secondary" onClick={() => openForm('conduct')}>Conduct Date</button>

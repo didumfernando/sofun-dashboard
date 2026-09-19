@@ -6,8 +6,8 @@ import Database from 'better-sqlite3'
 import XLSX from 'xlsx'
 
 const app = express()
-const port = Number(process.env.PORT ?? 3001)
-const dataDir = process.env.DATA_DIR ? process.env.DATA_DIR : join(process.cwd(), 'data')
+const port = 3001
+const dataDir = join(process.cwd(), 'data')
 mkdirSync(dataDir, { recursive: true })
 
 const dbPath = join(dataDir, 'sofun.db')
@@ -208,18 +208,7 @@ function getTableData() {
 }
 
 function getRows(table) {
-  const rows = db.prepare(tableQueries[table]).all()
-
-  if (!['medical', 'cs', 'atp', 'ippt', 'voc'].includes(table)) return rows
-
-  const personnelNames = new Map(
-    db.prepare('SELECT NRIC, name FROM personnel').all().map((person) => [person.NRIC, person.name]),
-  )
-
-  return rows.map((row) => ({
-    ...row,
-    name: personnelNames.get(row.NRIC) ?? '-',
-  }))
+  return db.prepare(tableQueries[table]).all()
 }
 
 function insertRow(table, payload) {
@@ -336,12 +325,9 @@ app.get('/api/overview', (_req, res) => {
 
 app.get('/api/atpcs', (_req, res) => {
   const data = getTableData()
-  const personnelNames = new Map(
-    db.prepare('SELECT NRIC, name FROM personnel').all().map((person) => [person.NRIC, person.name]),
-  )
   res.json([
-    ...data.atp.map((row) => ({ ...row, name: personnelNames.get(row.NRIC) ?? '-', type: 'ATP' })),
-    ...data.cs.map((row) => ({ ...row, name: personnelNames.get(row.NRIC) ?? '-', type: 'CS' })),
+    ...data.atp.map((row) => ({ ...row, type: 'ATP' })),
+    ...data.cs.map((row) => ({ ...row, type: 'CS' })),
   ].sort((a, b) => String(b.date_of_conduct).localeCompare(String(a.date_of_conduct))))
 })
 
@@ -449,17 +435,6 @@ app.get('/api/export/excel', (_req, res) => {
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   res.setHeader('Content-Disposition', 'attachment; filename=sofun-dashboard-export.xlsx')
   res.send(buffer)
-})
-
-const frontendPath = join(process.cwd(), 'dist')
-app.use(express.static(frontendPath))
-app.use((req, res, next) => {
-  if (req.method !== 'GET' || req.path.startsWith('/api')) {
-    next()
-    return
-  }
-
-  res.sendFile(join(frontendPath, 'index.html'))
 })
 
 app.listen(port, () => {
