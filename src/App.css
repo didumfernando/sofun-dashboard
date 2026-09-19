@@ -342,6 +342,7 @@ button {
   border: 1px solid var(--panel-border);
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.7);
+  color: var(--text);
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
   padding: 16px 18px 12px;
 }
@@ -351,6 +352,7 @@ button {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.03em;
+  color: var(--text);
 }
 
 .chart-wrap {
@@ -389,7 +391,7 @@ button {
   margin-top: 18px;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }

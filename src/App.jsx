@@ -301,6 +301,7 @@ function App() {
     return [
       { label: 'IPPT', segments: toSegments(data.overview.filter((row) => row.ippt && row.ippt !== '-').length, 'yellow') },
       { label: 'VOC', segments: toSegments(data.overview.filter((row) => row.voc && row.voc !== '-').length, 'green') },
+      { label: 'CS', segments: toSegments(data.overview.filter((row) => row.cs && row.cs !== '-').length, 'red') },
       { label: 'ATP', segments: toSegments(data.overview.filter((row) => row.atp && row.atp !== '-').length, 'amber') },
     ]
   }, [data])
@@ -373,7 +374,11 @@ function App() {
   }
 
   const currentView = viewConfig[activeView]
-  const nextConducts = data.conducts.slice(0, 4)
+  const today = new Date().toISOString().slice(0, 10)
+  const nextConducts = data.conducts
+    .filter((row) => String(row.date_of_conduct ?? '') >= today)
+    .sort((left, right) => String(left.date_of_conduct).localeCompare(String(right.date_of_conduct)))
+    .slice(0, 3)
   const chartTotal = medicalBreakdown.fit + medicalBreakdown.temporary + medicalBreakdown.permanent
   const fitStop = chartTotal > 0 ? (medicalBreakdown.fit / chartTotal) * 100 : 0
   const temporaryStop = chartTotal > 0 ? fitStop + ((medicalBreakdown.temporary / chartTotal) * 100) : 0

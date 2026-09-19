@@ -285,7 +285,7 @@ function buildOverviewRows(data) {
       year: person.turnY2 && person.turnY2 <= today ? '2' : '1',
       medical: medical?.medical_status ?? '-',
       ippt: ippt?.grade ?? '-',
-      voc: voc ? `${voc.type_of_VOC} (${voc.date_of_conduct})` : '-',
+      voc: voc ? 'Pass' : '-',
       cs: cs?.score ?? '-',
       atp: atp?.score ?? '-',
       cpl: `${person.rank} ${person.name}`,
