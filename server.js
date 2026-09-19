@@ -297,10 +297,36 @@ function getLatestByNric(rows, dateKey = 'date_of_conduct') {
   return latest
 }
 
+function formatOverviewDate(value) {
+  const [year, month, day] = String(value ?? '').split('-')
+  return year && month && day ? `${day}/${month}/${year}` : '-'
+}
+
+function getLatestVocByNric(rows) {
+  const latest = new Map()
+
+  for (const row of rows) {
+    const stage = Number(String(row.type_of_VOC ?? '').match(/(\d+)/)?.[1] ?? 0)
+    const existing = latest.get(row.NRIC)
+    const existingStage = Number(String(existing?.type_of_VOC ?? '').match(/(\d+)/)?.[1] ?? 0)
+    const isLaterStage = stage > existingStage
+    const isSameStageLater = stage === existingStage && String(row.date_of_conduct ?? '') > String(existing?.date_of_conduct ?? '')
+
+    if (!existing || isLaterStage || isSameStageLater) latest.set(row.NRIC, row)
+  }
+
+  return latest
+}
+
+function normalizeResult(value) {
+  if (!value) return '-'
+  return String(value).toLowerCase() === 'marksman' ? 'Marksmen' : value
+}
+
 function buildOverviewRows(data) {
   const latestMedical = getLatestByNric(data.medical, 'start_date')
   const latestIppt = getLatestByNric(data.ippt)
-  const latestVoc = getLatestByNric(data.voc)
+  const latestVoc = getLatestVocByNric(data.voc)
   const latestCs = getLatestByNric(data.cs)
   const latestAtp = getLatestByNric(data.atp)
   const today = new Date().toISOString().slice(0, 10)
@@ -319,9 +345,9 @@ function buildOverviewRows(data) {
       year: person.turnY2 && person.turnY2 <= today ? '2' : '1',
       medical: medical?.medical_status ?? '-',
       ippt: ippt?.grade ?? '-',
-      voc: voc ? 'Pass' : '-',
-      cs: cs?.score ?? '-',
-      atp: atp?.score ?? '-',
+      voc: voc ? (String(voc.type_of_VOC).toUpperCase() === 'VOC 4' ? 'Completed' : `${voc.type_of_VOC} (${formatOverviewDate(voc.date_of_conduct)})`) : '-',
+      cs: normalizeResult(cs?.score),
+      atp: normalizeResult(atp?.score),
       cpl: `${person.rank} ${person.name}`,
       NRIC: person.NRIC,
     }
