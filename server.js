@@ -1,7 +1,8 @@
 import express from 'express'
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto'
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { gunzipSync } from 'node:zlib'
 import Database from 'better-sqlite3'
 import XLSX from 'xlsx'
 
@@ -11,6 +12,32 @@ const dataDir = process.env.DATA_DIR ? process.env.DATA_DIR : join(process.cwd()
 mkdirSync(dataDir, { recursive: true })
 
 const dbPath = join(dataDir, 'sofun.db')
+const seedDatabasePath = join(process.cwd(), 'data', 'sofun-render.db.gz.b64')
+
+function restoreSeedDatabaseIfNeeded() {
+  if (!existsSync(seedDatabasePath)) return
+
+  let shouldRestore = !existsSync(dbPath) || statSync(dbPath).size === 0
+
+  if (!shouldRestore && existsSync(dbPath)) {
+    const existingDatabase = new Database(dbPath, { readonly: true })
+    const personnelTable = existingDatabase
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'personnel'")
+      .get()
+    const personnelCount = personnelTable ? existingDatabase.prepare('SELECT COUNT(*) AS count FROM personnel').get().count : 0
+    existingDatabase.close()
+    shouldRestore = personnelCount === 0
+  }
+
+  if (!shouldRestore) return
+
+  const compressedSeed = Buffer.from(readFileSync(seedDatabasePath, 'utf8').trim(), 'base64')
+  writeFileSync(dbPath, gunzipSync(compressedSeed))
+  console.log(`Restored seed database to ${dbPath}`)
+}
+
+restoreSeedDatabaseIfNeeded()
+
 const db = new Database(dbPath)
 const sessions = new Map()
 
