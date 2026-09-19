@@ -403,7 +403,17 @@ function App() {
   }
 
   function renderCellValue(row, column) {
-    const lookup = columnKeyMap[column] || column.toLowerCase().replace(/\s+/g, '_')
+    const overviewLookup = {
+      'Medical Status': 'medical',
+      IPPT: 'ippt',
+      VOC: 'voc',
+      CS: 'cs',
+      ATP: 'atp',
+      'Personnel Detail': 'cpl',
+    }
+    const lookup = row.cpl && overviewLookup[column]
+      ? overviewLookup[column]
+      : columnKeyMap[column] || column.toLowerCase().replace(/\s+/g, '_')
     const value = row[lookup]
 
     if (column === 'Platoon') return normalizePlatoon(value)
