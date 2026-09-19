@@ -346,6 +346,7 @@ function buildOverviewRows(data) {
       medical: medical?.medical_status ?? '-',
       ippt: ippt?.grade ?? '-',
       voc: voc ? (String(voc.type_of_VOC).toUpperCase() === 'VOC 4' ? 'Completed' : `${voc.type_of_VOC} (${formatOverviewDate(voc.date_of_conduct)})`) : '-',
+      vocDetail: voc ? `${voc.type_of_VOC} (${formatOverviewDate(voc.date_of_conduct)})` : '-',
       cs: normalizeResult(cs?.score),
       atp: normalizeResult(atp?.score),
       cpl: `${person.rank} ${person.name}`,

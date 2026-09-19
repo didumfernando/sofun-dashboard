@@ -661,7 +661,7 @@ function App() {
                         <p><strong>Platoon:</strong> {normalizePlatoon(selectedRow.platoon)}</p>
                         <p><strong>Medical:</strong> {selectedRow.medical || '-'}</p>
                         <p><strong>IPPT:</strong> {selectedRow.ippt || '-'}</p>
-                        <p><strong>VOC:</strong> {selectedRow.voc || '-'}</p>
+                        <p><strong>VOC:</strong> {selectedRow.vocDetail || selectedRow.voc || '-'}</p>
                         <p><strong>CS:</strong> {selectedRow.cs || '-'}</p>
                         <p><strong>ATP:</strong> {selectedRow.atp || '-'}</p>
                       </div>
