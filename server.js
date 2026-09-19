@@ -258,7 +258,18 @@ function getTableData() {
 }
 
 function getRows(table) {
-  return db.prepare(tableQueries[table]).all()
+  const rows = db.prepare(tableQueries[table]).all()
+
+  if (!['medical', 'cs', 'atp', 'ippt', 'voc'].includes(table)) return rows
+
+  const personnelNames = new Map(
+    db.prepare('SELECT NRIC, name FROM personnel').all().map((person) => [person.NRIC, person.name]),
+  )
+
+  return rows.map((row) => ({
+    ...row,
+    name: personnelNames.get(row.NRIC) ?? '-',
+  }))
 }
 
 function insertRow(table, payload) {
@@ -375,9 +386,13 @@ app.get('/api/overview', (_req, res) => {
 
 app.get('/api/atpcs', (_req, res) => {
   const data = getTableData()
+  const personnelNames = new Map(
+    db.prepare('SELECT NRIC, name FROM personnel').all().map((person) => [person.NRIC, person.name]),
+  )
+
   res.json([
-    ...data.atp.map((row) => ({ ...row, type: 'ATP' })),
-    ...data.cs.map((row) => ({ ...row, type: 'CS' })),
+    ...data.atp.map((row) => ({ ...row, name: personnelNames.get(row.NRIC) ?? '-', type: 'ATP' })),
+    ...data.cs.map((row) => ({ ...row, name: personnelNames.get(row.NRIC) ?? '-', type: 'CS' })),
   ].sort((a, b) => String(b.date_of_conduct).localeCompare(String(a.date_of_conduct))))
 })
 
